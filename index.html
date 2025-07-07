@@ -1,27 +1,847 @@
 <!DOCTYPE html>
- <html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Классические игры</title>
     <style>
-        body{
-            font-family: GOST type B;
-    font-size: 90%; 
-    color: white;
-   background-color:  black;
-   text-align: center;
+        :root {
+            --bg-color: #f0f0f0;
+            --text-color: #333;
+            --game-bg: #fff;
+            --border-color: #ccc;
+            --snake-head: #4CAF50;
+            --snake-body: #8BC34A;
+            --food-color: #F44336;
+            --cell-color: #ddd;
+            --mine-color: #FF5722;
+            --flag-color: #2196F3;
+            --x-color: #E91E63;
+            --o-color: #3F51B5;
+        }
+
+        .dark-theme {
+            --bg-color: #222;
+            --text-color: #eee;
+            --game-bg: #333;
+            --border-color: #555;
+            --snake-head: #388E3C;
+            --snake-body: #689F38;
+            --food-color: #D32F2F;
+            --cell-color: #444;
+            --mine-color: #E64A19;
+            --flag-color: #1976D2;
+            --x-color: #C2185B;
+            --o-color: #303F9F;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .sidebar {
+            width: 200px;
+            padding: 20px;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .ad-place {
+            background-color: var(--game-bg);
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px dashed var(--border-color);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .game-board {
+            background-color: var(--game-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            margin: 10px 0;
+            padding: 10px;
+        }
+
+        .controls {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button, select {
+            padding: 8px 15px;
+            background-color: var(--game-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--cell-color);
+        }
+
+        .top-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Стили для змейки */
+        #snake-game {
+            display: grid;
+            grid-template-columns: repeat(20, 20px);
+            grid-template-rows: repeat(20, 20px);
+            gap: 1px;
+        }
+
+        .snake-cell {
+            width: 20px;
+            height: 20px;
+            background-color: var(--cell-color);
+        }
+
+        .snake-body {
+            background-color: var(--snake-body);
+        }
+
+        .snake-head {
+            background-color: var(--snake-head);
+        }
+
+        .food {
+            background-color: var(--food-color);
+            border-radius: 50%;
+        }
+
+        /* Стили для сапёра */
+        #minesweeper {
+            display: grid;
+            grid-template-columns: repeat(15, 25px);
+            grid-template-rows: repeat(15, 25px);
+            gap: 1px;
+        }
+
+        .mine-cell {
+            width: 25px;
+            height: 25px;
+            background-color: var(--cell-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .mine-cell.revealed {
+            background-color: var(--game-bg);
+        }
+
+        .mine-cell.mine {
+            background-color: var(--mine-color);
+        }
+
+        .mine-cell.flag {
+            background-color: var(--flag-color);
+        }
+
+        /* Стили для крестиков-ноликов */
+        #tic-tac-toe {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+
+        .ttt-cell {
+            width: 100px;
+            height: 100px;
+            background-color: var(--cell-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .ttt-cell.x {
+            color: var(--x-color);
+        }
+
+        .ttt-cell.o {
+            color: var(--o-color);
+        }
+
+        .game-info {
+            margin: 10px 0;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: var(--game-bg);
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+        }
+
+        .tab-button.active {
+            background-color: var(--cell-color);
+        }
+
+        .tab-content {
+            width: 100%;
+        }
+
+        .sirius-info {
+            background-color: var(--game-bg);
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
-    <head>
-        <link href="C:\Users\Student\Desktop\1.css" rel="stylesheet" href="1.css">
- <title>Сайт</title>
- </head>
- <body >
+</head>
+<body>
+    <div class="top-buttons">
+        <button onclick="toggleTheme()">Тёмная тема</button>
+        <button onclick="showSiriusInfo()">О Сириусе</button>
+    </div>
+    
+    <h1>игры на уроках </h1>
+    
+    <div class="container">
+        <div class="main-content">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="openTab('snake-tab')">Змейка</button>
+                <button class="tab-button" onclick="openTab('minesweeper-tab')">Сапёр</button>
+                <button class="tab-button" onclick="openTab('tictactoe-tab')">Крестики-нолики</button>
+            </div>
+            
+            <div class="tab-content">
+                <!-- Змейка -->
+                <div id="snake-tab" class="game-tab">
+                    <div class="game-container">
+                        <h2>Змейка</h2>
+                        <div class="game-board">
+                            <div id="snake-game"></div>
+                        </div>
+                        <div class="game-info" id="snake-score">Счёт: 0</div>
+                        <div class="controls">
+                            <button onclick="startSnakeGame()">Старт</button>
+                            <button onclick="pauseSnakeGame()">Пауза</button>
+                            <button onclick="resetSnakeGame()">Сброс</button>
+                            <select id="snake-speed">
+                                <option value="150">Медленно</option>
+                                <option value="100" selected>Средне</option>
+                                <option value="50">Быстро</option>
+                            </select>
+                        </div>
+                        <div class="controls">
+                            <button onclick="changeSnakeDirection('up')">Вверх (↑)</button>
+                            <button onclick="changeSnakeDirection('down')">Вниз (↓)</button>
+                            <button onclick="changeSnakeDirection('left')">Влево (←)</button>
+                            <button onclick="changeSnakeDirection('right')">Вправо (→)</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Сапёр -->
+                <div id="minesweeper-tab" class="game-tab hidden">
+                    <div class="game-container">
+                        <h2>Сапёр</h2>
+                        <div class="game-board">
+                            <div id="minesweeper"></div>
+                        </div>
+                        <div class="game-info" id="minesweeper-status">Игра не начата</div>
+                        <div class="controls">
+                            <button onclick="startMinesweeperGame()">Новая игра</button>
+                            <select id="minesweeper-level">
+                                <option value="20">Лёгкий (20 мин)</option>
+                                <option value="30" selected>Средний (30 мин)</option>
+                                <option value="40">Сложный (40 мин)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Крестики-нолики -->
+                <div id="tictactoe-tab" class="game-tab hidden">
+                    <div class="game-container">
+                        <h2>Крестики-нолики</h2>
+                        <div class="game-board">
+                            <div id="tic-tac-toe"></div>
+                        </div>
+                        <div class="game-info" id="tictactoe-status">Ход: X</div>
+                        <div class="controls">
+                            <button onclick="startTicTacToeGame()">Новая игра</button>
+                        </div>
+                    </div>
+                    
+                    <div id="sirius-info" class="sirius-info hidden">
+                        <h3>Федеральная территория "Сириус"</h3>
+                        <p>Федеральная территория "Сириус" — это инновационный научно-технологический центр, созданный в России для развития талантов и реализации прорывных научно-технологических проектов.</p>
+                        <p>Основные факты:</p>
+                        <ul>
+                            <li>Создана в 2020 году на базе олимпийских объектов в Сочи</li>
+                            <li>Названа в честь звезды Сириус — самой яркой звезды на ночном небе</li>
+                            <li>Центр объединяет образование, науку и бизнес</li>
+                            <li>Здесь работают с одарёнными детьми со всей страны</li>
+                            <li>Развиваются перспективные направления: IT, биотехнологии, когнитивные исследования и другие</li>
+                        </ul>
+                        <p>Сириус стал площадкой для реализации амбициозных проектов и подготовки нового поколения российских учёных и инженеров.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="ad-place">
+                <p>Здесь могла быть ваша реклама</p>
+                <p>авиасеилс сервис с дешовыми авиа билетами</p>
+            </div>
+        </div>
+    </div>
 
-    <h1>ДОБРО ПОЖАЛОВАТЬ</h1>
-  <img src="8.png" alt="тут моя картинка"width="400"
-  height="341">
-  <p> Зовут меня Илья Крысенко. Живу я в городе Пермь. Мне 15 лет.</p>
-  <p> Я занимаюсь хоккеем, 3D печатью и немного пайкой и программированием на ардуино разной электроники.</p>
-  <p>Моё хобби это стрельба из лука и сборка конструкторов или пазлов.</p>
-  <p>Я увлекаюсь серией игр Age of Empires и Heroes of Might and Magic.</p>
-  <p></p>
- </body>
- </html>
+    <script>
+        // Глобальные переменные для змейки
+        let snake = [];
+        let food = {};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let snakeInterval;
+        let isSnakePaused = false;
+        let snakeScore = 0;
+        
+        // Глобальные переменные для сапёра
+        let minesweeperBoard = [];
+        let mineCount = 30;
+        let revealedCells = 0;
+        let gameOver = false;
+        const boardSize = 15;
+        
+        // Глобальные переменные для крестиков-ноликов
+        let ticTacToeBoard = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'x';
+        let gameActive = true;
+        
+        // Инициализация игр при загрузке страницы
+        window.onload = function() {
+            initSnakeGame();
+            initMinesweeper();
+            initTicTacToe();
+        };
+        
+        // Функции для змейки
+        function initSnakeGame() {
+            const gameContainer = document.getElementById('snake-game');
+            gameContainer.innerHTML = '';
+            
+            // Создаем игровое поле 20x20
+            for (let i = 0; i < 20; i++) {
+                for (let j = 0; j < 20; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'snake-cell';
+                    cell.id = `snake-cell-${i}-${j}`;
+                    gameContainer.appendChild(cell);
+                }
+            }
+            
+            resetSnakeGame();
+        }
+        
+        function resetSnakeGame() {
+            clearInterval(snakeInterval);
+            
+            // Начальная змейка длиной 3 клетки
+            snake = [
+                {x: 10, y: 10},
+                {x: 9, y: 10},
+                {x: 8, y: 10}
+            ];
+            
+            direction = 'right';
+            nextDirection = 'right';
+            snakeScore = 0;
+            document.getElementById('snake-score').textContent = 'Счёт: 0';
+            isSnakePaused = false;
+            
+            generateFood();
+            updateSnakeDisplay();
+        }
+        
+        function startSnakeGame() {
+            if (snakeInterval) clearInterval(snakeInterval);
+            isSnakePaused = false;
+            
+            const speed = parseInt(document.getElementById('snake-speed').value);
+            snakeInterval = setInterval(moveSnake, speed);
+        }
+        
+        function pauseSnakeGame() {
+            isSnakePaused = !isSnakePaused;
+            
+            if (isSnakePaused) {
+                clearInterval(snakeInterval);
+            } else {
+                startSnakeGame();
+            }
+        }
+        
+        function moveSnake() {
+            if (isSnakePaused) return;
+            
+            direction = nextDirection;
+            
+            // Получаем новую голову
+            const head = {...snake[0]};
+            
+            switch (direction) {
+                case 'up':
+                    head.y -= 1;
+                    break;
+                case 'down':
+                    head.y += 1;
+                    break;
+                case 'left':
+                    head.x -= 1;
+                    break;
+                case 'right':
+                    head.x += 1;
+                    break;
+            }
+            
+            // Проверка на столкновение с границами
+            if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) {
+                gameOverSnake();
+                return;
+            }
+            
+            // Проверка на столкновение с собой
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    gameOverSnake();
+                    return;
+                }
+            }
+            
+            // Добавляем новую голову
+            snake.unshift(head);
+            
+            // Проверка на съедение еды
+            if (head.x === food.x && head.y === food.y) {
+                snakeScore += 10;
+                document.getElementById('snake-score').textContent = `Счёт: ${snakeScore}`;
+                generateFood();
+            } else {
+                // Удаляем хвост, если не съели еду
+                snake.pop();
+            }
+            
+            updateSnakeDisplay();
+        }
+        
+        function gameOverSnake() {
+            clearInterval(snakeInterval);
+            alert(`Игра окончена! Ваш счёт: ${snakeScore}`);
+        }
+        
+        function generateFood() {
+            let foodPosition;
+            
+            do {
+                foodPosition = {
+                    x: Math.floor(Math.random() * 20),
+                    y: Math.floor(Math.random() * 20)
+                };
+                
+                // Проверяем, чтобы еда не появилась на змейке
+                var onSnake = false;
+                for (let i = 0; i < snake.length; i++) {
+                    if (snake[i].x === foodPosition.x && snake[i].y === foodPosition.y) {
+                        onSnake = true;
+                        break;
+                    }
+                }
+            } while (onSnake);
+            
+            food = foodPosition;
+        }
+        
+        function updateSnakeDisplay() {
+            // Очищаем поле
+            for (let i = 0; i < 20; i++) {
+                for (let j = 0; j < 20; j++) {
+                    const cell = document.getElementById(`snake-cell-${i}-${j}`);
+                    cell.className = 'snake-cell';
+                }
+            }
+            
+            // Рисуем змейку
+            for (let i = 0; i < snake.length; i++) {
+                const segment = snake[i];
+                const cell = document.getElementById(`snake-cell-${segment.y}-${segment.x}`);
+                
+                if (i === 0) {
+                    cell.className = 'snake-cell snake-head';
+                } else {
+                    cell.className = 'snake-cell snake-body';
+                }
+            }
+            
+            // Рисуем еду
+            const foodCell = document.getElementById(`snake-cell-${food.y}-${food.x}`);
+            foodCell.className = 'snake-cell food';
+        }
+        
+        function changeSnakeDirection(newDirection) {
+            // Запрещаем разворот на 180 градусов
+            if (
+                (direction === 'up' && newDirection !== 'down') ||
+                (direction === 'down' && newDirection !== 'up') ||
+                (direction === 'left' && newDirection !== 'right') ||
+                (direction === 'right' && newDirection !== 'left')
+            ) {
+                nextDirection = newDirection;
+            }
+        }
+        
+        // Обработчики клавиш для змейки
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case 'ArrowUp':
+                    changeSnakeDirection('up');
+                    break;
+                case 'ArrowDown':
+                    changeSnakeDirection('down');
+                    break;
+                case 'ArrowLeft':
+                    changeSnakeDirection('left');
+                    break;
+                case 'ArrowRight':
+                    changeSnakeDirection('right');
+                    break;
+                case ' ':
+                    pauseSnakeGame();
+                    break;
+            }
+        });
+        
+        // Функции для сапёра
+        function initMinesweeper() {
+            mineCount = parseInt(document.getElementById('minesweeper-level').value);
+            
+            const gameContainer = document.getElementById('minesweeper');
+            gameContainer.innerHTML = '';
+            
+            // Создаем игровое поле 15x15
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'mine-cell';
+                    cell.id = `mine-cell-${i}-${j}`;
+                    cell.onclick = function() { revealCell(i, j); };
+                    cell.oncontextmenu = function(e) { placeFlag(e, i, j); return false; };
+                    gameContainer.appendChild(cell);
+                }
+            }
+        }
+        
+        function startMinesweeperGame() {
+            mineCount = parseInt(document.getElementById('minesweeper-level').value);
+            
+            // Инициализация доски
+            minesweeperBoard = [];
+            revealedCells = 0;
+            gameOver = false;
+            
+            // Создаем пустую доску
+            for (let i = 0; i < boardSize; i++) {
+                minesweeperBoard[i] = [];
+                for (let j = 0; j < boardSize; j++) {
+                    minesweeperBoard[i][j] = {
+                        isMine: false,
+                        isRevealed: false,
+                        isFlagged: false,
+                        neighborMines: 0
+                    };
+                    
+                    const cell = document.getElementById(`mine-cell-${i}-${j}`);
+                    cell.className = 'mine-cell';
+                    cell.textContent = '';
+                }
+            }
+            
+            // Расставляем мины
+            let minesPlaced = 0;
+            while (minesPlaced < mineCount) {
+                const x = Math.floor(Math.random() * boardSize);
+                const y = Math.floor(Math.random() * boardSize);
+                
+                if (!minesweeperBoard[x][y].isMine) {
+                    minesweeperBoard[x][y].isMine = true;
+                    minesPlaced++;
+                }
+            }
+            
+            // Подсчитываем количество мин вокруг каждой клетки
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (!minesweeperBoard[i][j].isMine) {
+                        let count = 0;
+                        
+                        // Проверяем все соседние клетки
+                        for (let di = -1; di <= 1; di++) {
+                            for (let dj = -1; dj <= 1; dj++) {
+                                if (di === 0 && dj === 0) continue;
+                                
+                                const ni = i + di;
+                                const nj = j + dj;
+                                
+                                if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && minesweeperBoard[ni][nj].isMine) {
+                                    count++;
+                                }
+                            }
+                        }
+                        
+                        minesweeperBoard[i][j].neighborMines = count;
+                    }
+                }
+            }
+            
+            document.getElementById('minesweeper-status').textContent = `Осталось мин: ${mineCount}`;
+        }
+        
+        function revealCell(i, j) {
+            if (gameOver || minesweeperBoard[i][j].isRevealed || minesweeperBoard[i][j].isFlagged) return;
+            
+            const cell = document.getElementById(`mine-cell-${i}-${j}`);
+            minesweeperBoard[i][j].isRevealed = true;
+            revealedCells++;
+            
+            if (minesweeperBoard[i][j].isMine) {
+                // Игрок наступил на мину
+                cell.className = 'mine-cell mine';
+                gameOver = true;
+                revealAllMines();
+                document.getElementById('minesweeper-status').textContent = 'Игра окончена! Вы проиграли.';
+            } else {
+                cell.className = 'mine-cell revealed';
+                
+                if (minesweeperBoard[i][j].neighborMines > 0) {
+                    cell.textContent = minesweeperBoard[i][j].neighborMines;
+                } else {
+                    // Если вокруг нет мин, открываем соседние клетки рекурсивно
+                    for (let di = -1; di <= 1; di++) {
+                        for (let dj = -1; dj <= 1; dj++) {
+                            if (di === 0 && dj === 0) continue;
+                            
+                            const ni = i + di;
+                            const nj = j + dj;
+                            
+                            if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && !minesweeperBoard[ni][nj].isRevealed) {
+                                revealCell(ni, nj);
+                            }
+                        }
+                    }
+                }
+                
+                // Проверяем условие победы
+                if (revealedCells === boardSize * boardSize - mineCount) {
+                    gameOver = true;
+                    document.getElementById('minesweeper-status').textContent = 'Поздравляем! Вы победили!';
+                }
+            }
+        }
+        
+        function placeFlag(e, i, j) {
+            e.preventDefault();
+            
+            if (gameOver || minesweeperBoard[i][j].isRevealed) return;
+            
+            const cell = document.getElementById(`mine-cell-${i}-${j}`);
+            
+            if (minesweeperBoard[i][j].isFlagged) {
+                minesweeperBoard[i][j].isFlagged = false;
+                cell.className = 'mine-cell';
+                cell.textContent = '';
+            } else {
+                minesweeperBoard[i][j].isFlagged = true;
+                cell.className = 'mine-cell flag';
+                cell.textContent = '🚩';
+            }
+        }
+        
+        function revealAllMines() {
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (minesweeperBoard[i][j].isMine) {
+                        const cell = document.getElementById(`mine-cell-${i}-${j}`);
+                        cell.className = 'mine-cell mine';
+                    }
+                }
+            }
+        }
+        
+        // Функции для крестиков-ноликов
+        function initTicTacToe() {
+            const gameContainer = document.getElementById('tic-tac-toe');
+            gameContainer.innerHTML = '';
+            
+            // Создаем игровое поле 3x3
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'ttt-cell';
+                cell.id = `ttt-cell-${i}`;
+                cell.onclick = function() { makeMove(i); };
+                gameContainer.appendChild(cell);
+            }
+            
+            startTicTacToeGame();
+        }
+        
+        function startTicTacToeGame() {
+            ticTacToeBoard = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'x';
+            gameActive = true;
+            
+            // Очищаем клетки
+            for (let i = 0; i < 9; i++) {
+                const cell = document.getElementById(`ttt-cell-${i}`);
+                cell.className = 'ttt-cell';
+                cell.textContent = '';
+            }
+            
+            document.getElementById('tictactoe-status').textContent = 'Ход: X';
+        }
+        
+        function makeMove(index) {
+            if (!gameActive || ticTacToeBoard[index] !== '') return;
+            
+            ticTacToeBoard[index] = currentPlayer;
+            const cell = document.getElementById(`ttt-cell-${index}`);
+            cell.textContent = currentPlayer.toUpperCase();
+            cell.classList.add(currentPlayer);
+            
+            if (checkWin()) {
+                document.getElementById('tictactoe-status').textContent = `Победил ${currentPlayer.toUpperCase()}!`;
+                gameActive = false;
+                return;
+            }
+            
+            if (checkDraw()) {
+                document.getElementById('tictactoe-status').textContent = 'Ничья!';
+                gameActive = false;
+                return;
+            }
+            
+            currentPlayer = currentPlayer === 'x' ? 'o' : 'x';
+            document.getElementById('tictactoe-status').textContent = `Ход: ${currentPlayer.toUpperCase()}`;
+        }
+        
+        function checkWin() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+            
+            return winPatterns.some(pattern => {
+                const [a, b, c] = pattern;
+                return ticTacToeBoard[a] !== '' && 
+                       ticTacToeBoard[a] === ticTacToeBoard[b] && 
+                       ticTacToeBoard[a] === ticTacToeBoard[c];
+            });
+        }
+        
+        function checkDraw() {
+            return ticTacToeBoard.every(cell => cell !== '');
+        }
+        
+        // Общие функции
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+        }
+        
+        function openTab(tabName) {
+            // Скрываем все вкладки
+            const tabs = document.getElementsByClassName('game-tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.add('hidden');
+            }
+            
+            // Убираем активный класс у всех кнопок
+            const tabButtons = document.getElementsByClassName('tab-button');
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            
+            // Показываем выбранную вкладку и делаем кнопку активной
+            document.getElementById(tabName).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+        }
+        
+        function showSiriusInfo() {
+            const info = document.getElementById('sirius-info');
+            info.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
